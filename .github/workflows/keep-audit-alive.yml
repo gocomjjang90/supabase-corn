@@ -1,0 +1,17 @@
+name: Keep Audit Supabase Alive
+
+on:
+  schedule:
+    # 3일에 한 번씩 실행
+    - cron: '0 0 */3 * *' 
+  workflow_dispatch: # 웹에서 수동 실행 가능
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Audit Supabase Database
+        run: |
+          curl -X GET "${{ secrets.AUDIT_SUPABASE_URL }}/rest/v1/audit_reports?select=id&limit=1" \
+          -H "apikey: ${{ secrets.AUDIT_SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.AUDIT_SUPABASE_ANON_KEY }}"
