@@ -1,25 +1,37 @@
+
 name: Keep All Supabase Projects Alive
 
 on:
   schedule:
-    # 3일에 한 번씩 자동 실행 (Supabase 7일 미활동 잠금 방지)
-    - cron: '0 0 */3 * *'
-  workflow_dispatch: # GitHub 웹에서 수동 실행 버튼 활성화
+    # 매일 오전 3시 17분 (UTC) 실행
+    - cron: '17 3 * * *'
+  workflow_dispatch:
 
 jobs:
   ping-all-projects:
     runs-on: ubuntu-latest
-    steps:
-      # 1. risk-card 프로젝트 Ping
-      - name: Ping risk-card Project
-        run: |
-          curl -i -X GET "${{ secrets.RISK_CARD_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.RISK_CARD_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.RISK_CARD_ANON_KEY }}"
+    timeout-minutes: 5
 
-      # 2. S&H system 프로젝트 Ping
-      - name: Ping S&H system Project
+    steps:
+      - name: Ping risk-card Project
+        env:
+          SUPABASE_URL: ${{ secrets.RISK_CARD_URL }}
+          SUPABASE_KEY: ${{ secrets.RISK_CARD_ANON_KEY }}
         run: |
-          curl -i -X GET "${{ secrets.SH_SYSTEM_URL }}/rest/v1/" \
-            -H "apikey: ${{ secrets.SH_SYSTEM_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SH_SYSTEM_ANON_KEY }}"
+          curl --fail --silent --show-error \
+            --retry 3 --retry-all-errors --max-time 20 \
+            "${SUPABASE_URL}/rest/v1/cards?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}"
+
+      - name: Ping S&H system Project
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SH_SYSTEM_URL }}
+          SUPABASE_KEY: ${{ secrets.SH_SYSTEM_ANON_KEY }}
+        run: |
+          curl --fail --silent --show-error \
+            --retry 3 --retry-all-errors --max-time 20 \
+            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}"
