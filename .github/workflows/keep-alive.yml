@@ -46,3 +46,17 @@ jobs:
             -H "apikey: ${SUPABASE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_KEY}"
 
+      # 3. QR_manager 프로젝트 Ping
+      - name: Ping QR_manager Project
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.QR_MANAGER_URL }}
+          SUPABASE_KEY: ${{ secrets.QR_MANAGER_PUBLISHABLE_KEY }}
+        run: |
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --max-time 20 \
+            "${SUPABASE_URL}/rest/v1/qr_codes?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}"
