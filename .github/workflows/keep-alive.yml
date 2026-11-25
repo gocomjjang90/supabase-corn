@@ -51,7 +51,7 @@ jobs:
         if: ${{ always() }}
         env:
           SUPABASE_URL: ${{ secrets.QR_MANAGER_URL }}
-          SUPABASE_KEY: ${{ secrets.QR_MANAGER_PUBLISHABLE_KEY }}
+          SUPABASE_KEY: ${{ secrets.QR_MANAGER_ANON_KEY }}
         run: |
           curl --fail --silent --show-error \
             --retry 3 \
